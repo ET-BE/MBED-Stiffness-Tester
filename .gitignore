@@ -1,0 +1,18 @@
+# Build stuff
+BUILD
+.build
+.mbed
+projectfiles
+*.py*
+
+# Modules (linked using the .lib files intead)
+mbed-os/
+biquad-filter/
+HX711/
+quadrature-encoder/
+uscope/
+
+# IDE stuff
+.vs/
+.idea/
+.vscode/
