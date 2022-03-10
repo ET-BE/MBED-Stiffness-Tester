@@ -1,5 +1,8 @@
 #include <chrono>
+#include <cstdio>
 #include <mbed.h>
+
+#include "main.h"
 
 #include "motor/motor.h"
 #include "quadrature-encoder/QEI.h"
@@ -15,11 +18,14 @@ const float Fs = 500; // Hz
 
 Timer t;
 
+BufferedSerial console(STDIO_UART_TX, STDIO_UART_RX, 115200);
+
 DigitalOut led(LED_BLUE);
 
 Motor motor(D5, D4);
 
-PID pid(0.02f, 0.002f, 0.0f, 1.0f / Fs);
+//PID pid(0.02f, 0.002f, 0.0f, 1.0f / Fs);
+PID pid(0.5f, 0.02f, 0.01f, 1.0f / Fs);
 
 QEI encoder(D13, D12, 8384);
 AnalogIn pot_meter(A0);
@@ -28,34 +34,8 @@ HX711 loadcell(D2, D3); // data, clock
 
 BiquadFilter filter_torque(Fs, 10.0f, BiquadFilter::TYPE_LOW_PASS);
 
-const float max_angle = 10.0f; // Degrees
-const float max_torque = 0.1; // Nm
-
-/**
- * Get a nice PWM value [-1, 1] from the potmeter [0, 1]
- */
-float potmeter_to_pwm(float pot) {
-
-    pot = 2.0f * pot_meter.read() - 1.0f; // Now ranges from [-1, 1]
-
-    const float dead = 0.4f;
-
-    pot *= 1.0f + dead; // Now range is [-1.5, 1.5]
-
-    if (abs(pot) < dead) {
-        return 0.0f;
-        // Dead zone to make pausing easier
-    }
-
-    float speed;
-    if (pot > 0.0f) {
-        speed = pot - dead; // range [0, 1]
-    } else {
-        speed = pot + dead; // range [-1, 0]
-    }
-
-    return speed;
-}
+float max_angle = 10.0f; // Degrees
+float max_torque = 0.3; // Nm
 
 int main()
 {
@@ -63,8 +43,6 @@ int main()
     duration<float> loop_time(1.0f / Fs);
 
     pid.setFilter(75.0f); // Add filter for derivative
-
-    float startup = 0.0f;
 
     // The amplifier is 24 bit
     // (int rangesensor * amplifier gain) / (Vcc * sensitivity)
@@ -75,12 +53,15 @@ int main()
     float torque = 0.0f;
     float ref_angle = 0.0f;
 
-    printf("Setting up scope...\n");
+    printf("\nSetting up scope...\n");
     ThisThread::sleep_for(1ms);
 
-    HIDScope scope(3);
+    HIDScope scope(4);
 
     printf("Scope connected.\n");
+
+    printf("\nChange settings by typing: [letter][value]\n");
+    printf("Use: a - Max angle, t - Torque limit\n");
 
     while (true) {
         auto next = t.elapsed_time() + loop_time;
@@ -91,7 +72,7 @@ int main()
             torque = loadcell.getUnits(1); // Get a single measurement
         }
 
-        float pot_angle = potmeter_to_pwm(pot_meter.read())
+        float pot_angle = potmeter_to_amplitude(pot_meter.read())
             * max_angle; // Get desired deflection
 
         // float ref_angle_new = pot_angle;
@@ -111,10 +92,6 @@ int main()
 
         float pwm = pid.control(ref_angle - angle);
 
-        if (abs(pwm) < 0.01f) {
-            pwm = 0.0f; // Prevent stalling with annoying sound
-        }
-
         motor.set(pwm);
 
         // Also update filter when no data is coming in        
@@ -124,17 +101,57 @@ int main()
         static unsigned int counter = 0;
         if (counter++ > 100) {
 
-            led.write(led.read());
+            static bool blink = false;
+            led.write(blink = !blink);
             //printf("Speed: %.2f - Angle: %.1f - Torque: %.1f\n", speed, angle, torque);
             counter = 0;
         }
 
         // Send data
         unsigned int i = 0;
+        scope.set(i++, ref_angle);
         scope.set(i++, angle);
         scope.set(i++, pwm);
         scope.set(i++, torque_filtered);
         scope.send();
+
+        // Process serial input
+
+        static char c;
+        static char input_buffer[32];
+        static unsigned int input_i = 0;
+
+        while (console.readable()) {
+            console.read(&c, 1);
+            
+            if (input_i >= 32 || c == 13) {
+
+                input_buffer[input_i] = '\0'; // Insert null terminator
+
+                char var;
+                float val;
+                sscanf(input_buffer, "%c%f", &var, &val);
+
+                if (var == 'a') {
+                    if (val > 0.0 && val < 30.0f) {
+                        max_angle = val;
+                        printf("\nNew max. angle: %.2f\n", max_angle);
+                    }
+                } else if (var == 't') {
+                    if (val > 0.0 && val < 1.0f) {
+                        max_torque = val;
+                        printf("\nNew torque limit: %.2f\n", max_torque);
+                    }
+                }
+
+                input_i = 0;
+                break;
+            } else {
+                console.write(&c, 1); // Echo back
+            }
+
+            input_buffer[input_i++] = c;
+        }
 
         // Make sure the execution time + pause time == loop time
         while (t.elapsed_time() < next) {}

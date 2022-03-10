@@ -3,8 +3,8 @@
 Motor::Motor(PinName pin_pwm, PinName pin_dir) :
     pwm_(pin_pwm), dir_(pin_dir) {
 
-    //pwm.period_us(500); // 500 us = 2 kHz
     pwm_.write(0.0f);
+    pwm_.period_us(60); // 60 us ~ 17 kHz
     dir_.write(0);
 }
 

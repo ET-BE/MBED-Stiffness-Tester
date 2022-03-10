@@ -2,9 +2,13 @@
 #define MOTOR_H_
 
 #include <mbed.h>
+#include "FastPWM/FastPWM.h"
 
 /**
  * Basic motor class to combine PWM and direction pin.
+ *
+ * Use FastPWM (not the default PwmOut) to prevent resetting the duty
+ * cycle phase when writing a new PWM value.
  */
 class Motor {
 
@@ -23,7 +27,7 @@ public:
     void set(float speed);
 
 private:
-    PwmOut pwm_;
+    FastPWM pwm_;
     DigitalOut dir_;
 };
 
