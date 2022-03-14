@@ -4,6 +4,22 @@ This repo contains a K64F MCU program for Venkat's Stiffness Tester.
 
 Use uScope to view the live data: https://bitbucket.org/ctw-bw/uscope
 
+This program will send a slow sine position reference to the motor to deflect the spring, while measuring the torque.  
+The sine has a set amplitude. There is also a torque limit. When this limit is exceeded, the reference position is capped, stopping the joint from being deflected further.
+
+## Usage
+
+Connect the second micro-USB port (marked `K64 USB`) to your computer and use uScope to read the live data.  
+The graphs are:
+
+ 1. Position reference (degrees)
+ 2. Encoder readout (degrees)
+ 3. Motor PWM signal (ratio)
+ 4. Torque sensor output (Nm)
+
+Optionally, connect the first USB port too (marked `SDA USB`) and use a serial terminal to connect to the board. This works side-by-side with uScope.  
+In the terminal, enter a letter followed by a value to change the torque limit and the max. angle. E.g., enter `a20.0` followed by `[Enter]`.
+
 ## Hardware
 
  * MBED K64F microcontroller

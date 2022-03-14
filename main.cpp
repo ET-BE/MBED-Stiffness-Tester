@@ -35,7 +35,7 @@ HX711 loadcell(D2, D3); // data, clock
 BiquadFilter filter_torque(Fs, 10.0f, BiquadFilter::TYPE_LOW_PASS);
 
 float max_angle = 10.0f; // Degrees
-float max_torque = 0.3; // Nm
+float max_torque = 0.2; // Nm
 
 int main()
 {
@@ -126,21 +126,27 @@ int main()
             
             if (input_i >= 32 || c == 13) {
 
-                input_buffer[input_i] = '\0'; // Insert null terminator
+                printf("\n");
+                if (input_i > 2) {
 
-                char var;
-                float val;
-                sscanf(input_buffer, "%c%f", &var, &val);
+                    input_buffer[input_i] = '\0'; // Insert null terminator
 
-                if (var == 'a') {
-                    if (val > 0.0 && val < 30.0f) {
-                        max_angle = val;
-                        printf("\nNew max. angle: %.2f\n", max_angle);
-                    }
-                } else if (var == 't') {
-                    if (val > 0.0 && val < 1.0f) {
-                        max_torque = val;
-                        printf("\nNew torque limit: %.2f\n", max_torque);
+                    char var;
+                    float val;
+                    sscanf(input_buffer, "%c%f", &var, &val);
+
+                    if (var == 'a') {
+                        if (val > 0.01f && val < 30.0f) {
+                            max_angle = val;
+                        }
+                        printf("New max. angle: %.2f\n", max_angle);
+                    } else if (var == 't') {
+                        if (val > 0.01f && val < 1.0f) {
+                            max_torque = val;
+                        }
+                        printf("New torque limit: %.2f\n", max_torque);
+                    } else {
+                        printf("Unknown command [%c]\n", var);
                     }
                 }
 
