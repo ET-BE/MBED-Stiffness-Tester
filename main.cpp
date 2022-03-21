@@ -27,7 +27,7 @@ Motor motor(D5, D4);
 //PID pid(0.02f, 0.002f, 0.0f, 1.0f / Fs);
 PID pid(0.5f, 0.02f, 0.01f, 1.0f / Fs);
 
-QEI encoder(D13, D12, 8384);
+QEI encoder(D13, D12, 8400, QEI::X4_ENCODING);
 AnalogIn pot_meter(A0);
 
 HX711 loadcell(D2, D3); // data, clock
@@ -36,6 +36,7 @@ BiquadFilter filter_torque(Fs, 10.0f, BiquadFilter::TYPE_LOW_PASS);
 
 float max_angle = 10.0f; // Degrees
 float max_torque = 0.2; // Nm
+float period = 10.0f; // Seconds (sine period)
 
 int main()
 {
@@ -61,7 +62,10 @@ int main()
     printf("Scope connected.\n");
 
     printf("\nChange settings by typing: [letter][value]\n");
-    printf("Use: a - Max angle, t - Torque limit\n");
+    printf("Use: (current value)\n");
+    printf("a - Max angle (%.2f)\n", max_angle);
+    printf("t - Torque limit (%.2f)\n", max_torque);
+    printf("p - Sine period (%.2f)\n", period);
 
     while (true) {
         auto next = t.elapsed_time() + loop_time;
@@ -75,11 +79,8 @@ int main()
         float pot_angle = potmeter_to_amplitude(pot_meter.read())
             * max_angle; // Get desired deflection
 
-        // float ref_angle_new = pot_angle;
-
-        const float freq = 1.0f / 5.0f; // 1 / period
         float time = (duration<float>(t.elapsed_time())).count();
-        float ref_angle_new = pot_angle * sinf(2.0f * M_PI * freq * time);
+        float ref_angle_new = pot_angle * sinf(2.0f * M_PI * time / period);
 
         if (abs(torque) < max_torque ||
                 abs(ref_angle_new) < abs(ref_angle)) {
@@ -127,7 +128,7 @@ int main()
             if (input_i >= 32 || c == 13) {
 
                 printf("\n");
-                if (input_i > 2) {
+                if (input_i > 1) {
 
                     input_buffer[input_i] = '\0'; // Insert null terminator
 
@@ -136,16 +137,21 @@ int main()
                     sscanf(input_buffer, "%c%f", &var, &val);
 
                     if (var == 'a') {
-                        if (val > 0.01f && val < 30.0f) {
+                        if (val > 0.01f && val <= 30.0f) {
                             max_angle = val;
                         }
                         printf("New max. angle: %.2f\n", max_angle);
                     } else if (var == 't') {
-                        if (val > 0.01f && val < 1.0f) {
+                        if (val > 0.01f && val <= 1.0f) {
                             max_torque = val;
                         }
                         printf("New torque limit: %.2f\n", max_torque);
-                    } else {
+                    } else if (var == 'p') {
+                        if (val >= 1.0f && val <= 500.0f) {
+                            period = val;
+                        }
+                        printf("New sine period: %.2f\n", period);
+                    }else {
                         printf("Unknown command [%c]\n", var);
                     }
                 }
