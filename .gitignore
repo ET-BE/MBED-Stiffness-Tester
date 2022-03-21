@@ -5,15 +5,15 @@ BUILD
 projectfiles
 *.py*
 
-# Modules (linked using the .lib files intead)
-mbed-os/
-biquad-filter/
-HX711/
-quadrature-encoder/
-uscope/
-FastPWM/
-
 # IDE stuff
 .vs/
 .idea/
 .vscode/
+
+# Modules (linked using the .lib files intead)
+uscope
+quadrature-encoder
+mbed-os
+HX711
+FastPWM
+biquad-filter
