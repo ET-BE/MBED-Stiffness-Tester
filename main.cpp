@@ -28,7 +28,11 @@ Motor motor(D5, D4);
 PID pid(0.5f, 0.02f, 0.01f, 1.0f / Fs);
 
 QEI encoder(D13, D12, 8400, QEI::X4_ENCODING);
+
 AnalogIn pot_meter(A0);
+
+DigitalIn button1(D8, PullUp);
+DigitalIn button2(D9, PullUp);
 
 HX711 loadcell(D2, D3); // data, clock
 

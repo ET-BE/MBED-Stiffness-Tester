@@ -66,6 +66,9 @@ On the K64F, connect:
  * `D12` to encoder 2, channel B
  * `D13` to encoder 2, channel A
  * `A0` to POT2 (if using the potmeter)
+ * `D8` to the first button (in pull-up mode) (unused)
+ * `D9` to the second button (in pull-up mode) (unused)
+ * `GND` to the potmeter and both buttons
 
 Baked into the motor shield are the connections:
 
