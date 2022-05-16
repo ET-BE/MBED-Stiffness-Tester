@@ -1,5 +1,7 @@
 # Stiffness Tester
 
+![MUC Photo](mcu_box.jpg "MCU inside box")
+
 This repo contains a K64F MCU program for Venkat's Stiffness Tester.
 
 Use uScope to view the live data: https://bitbucket.org/ctw-bw/uscope  
