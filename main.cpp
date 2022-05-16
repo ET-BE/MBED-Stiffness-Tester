@@ -32,7 +32,6 @@ QEI encoder(D13, D12, 8400, QEI::X4_ENCODING);
 AnalogIn pot_meter(A0);
 
 DigitalIn button1(D8, PullUp);
-DigitalIn button2(D9, PullUp);
 
 HX711 loadcell(D2, D3); // data, clock
 
@@ -155,7 +154,7 @@ int main()
                             period = val;
                         }
                         printf("New sine period: %.2f\n", period);
-                    }else {
+                    } else {
                         printf("Unknown command [%c]\n", var);
                     }
                 }

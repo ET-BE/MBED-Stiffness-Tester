@@ -2,7 +2,8 @@
 
 This repo contains a K64F MCU program for Venkat's Stiffness Tester.
 
-Use uScope to view the live data: https://bitbucket.org/ctw-bw/uscope
+Use uScope to view the live data: https://bitbucket.org/ctw-bw/uscope  
+Note: you will need the **HID** version (instead of the serial version).
 
 This program will send a slow sine position reference to the motor to deflect the spring, while measuring the torque.  
 The sine has a set amplitude. There is also a torque limit. When this limit is exceeded, the reference position is capped, stopping the joint from being deflected further.
@@ -59,6 +60,7 @@ On small HX711 breakout board, connect:
  * `E-` to the sensor ground (black wire)
  * `A+` to the sensor output 1 (white wire)
  * `A-` to the sensor output 2 (green wire)
+ * `SD/YLW` to the sensor shield
 
 On the K64F, connect:
 
@@ -66,8 +68,8 @@ On the K64F, connect:
  * `D12` to encoder 2, channel B
  * `D13` to encoder 2, channel A
  * `A0` to POT2 (if using the potmeter)
- * `D8` to the first button (in pull-up mode) (unused)
- * `D9` to the second button (in pull-up mode) (unused)
+ * `RST` to the first button (pull-up mode)
+ * `D8` to the second button (in pull-up mode) (unused)
  * `GND` to the potmeter and both buttons
 
 Baked into the motor shield are the connections:
